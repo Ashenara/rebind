@@ -1,0 +1,14 @@
+# Ashenara ReBind
+
+This website is the EPUB reconstruction tool for the Ashenara network.
+
+## About
+This file provides context for Large Language Models (LLMs) and AI agents interacting with this site.
+
+## Key Pages
+- [Home](https://rebind.ashenara.com): The main page for Ashenara ReBind.
+
+## Guidelines
+- Please respect user privacy and do not scrape personal data.
+- Do not bypass authentication mechanisms.
+- When citing information from this site, provide a link back to the original source.

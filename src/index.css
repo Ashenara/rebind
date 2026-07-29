@@ -1,0 +1,139 @@
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+:root {
+  /* Minimalist IDE/Linear Theme */
+  --bg-main: #09090b; /* zinc-950 */
+  --bg-sidebar: #09090b; /* zinc-950 */
+  --bg-surface: #18181b; /* zinc-900 */
+  --bg-surface-hover: #27272a; /* zinc-800 */
+  --bg-card: #18181b; /* zinc-900 */
+
+  --border-color: #27272a; /* zinc-800 */
+  --border-color-hover: #3f3f46; /* zinc-700 */
+  --border-color-focus: #52525b; /* zinc-600 */
+
+  /* Muted Accents */
+  --primary: #f4f4f5; /* zinc-100 */
+  --primary-hover: #ffffff; /* white */
+  --primary-gradient: none;
+  --primary-gradient-hover: none;
+  --primary-glow: none;
+
+  --text-main: #e4e4e7; /* zinc-200 */
+  --text-muted: #a1a1aa; /* zinc-400 */
+  --text-sub: #71717a; /* zinc-500 */
+
+  /* Utility Accents (toned down) */
+  --accent-blue: #3b82f6; /* blue-500 */
+  --accent-pink: #d946ef; /* fuchsia-500 */
+  --accent-green: #22c55e; /* green-500 */
+  --accent-red: #ef4444; /* red-500 */
+  --accent-amber: #f59e0b; /* amber-500 */
+
+  --glass-blur: none;
+  --shadow-card: 0 4px 12px rgba(0,0,0,0.3);
+  --shadow-glow: none;
+
+  --transition-smooth: all 0.15s ease-in-out;
+  --transition-bounce: none;
+}
+
+@layer base {
+  html {
+    background-color: var(--bg-main);
+    overflow: hidden;
+    color: var(--text-main);
+  }
+
+  body {
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    overflow: hidden;
+    /* Prevent page level scroll */
+    height: 100vh;
+    width: 100%;
+    position: relative;
+  }
+
+  #root {
+    height: 100vh;
+    width: 100%;
+    overflow: hidden;
+  }
+}
+
+/* Custom Scrollbars - iOS minimal style */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+/* Dashboard Sidebar Layout - Floating style */
+
+/* 
+  Editor Content Typography (Tailwind resets these by default) 
+  This provides standard reading padding and spacing for EPUB preview contents.
+*/
+.editor-content p, .editor-content div {
+  margin-bottom: 1.25rem;
+  line-height: 1.8;
+}
+
+.editor-content p:last-child, .editor-content div:last-child {
+  margin-bottom: 0;
+}
+
+.editor-content h1, 
+.editor-content h2, 
+.editor-content h3, 
+.editor-content h4 {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.3;
+}
+
+.editor-content h1 { font-size: 2.25rem; }
+.editor-content h2 { font-size: 1.875rem; }
+.editor-content h3 { font-size: 1.5rem; }
+
+.editor-content b, 
+.editor-content strong {
+  font-weight: 700;
+  color: #fff;
+}
+
+.editor-content i, 
+.editor-content em {
+  font-style: italic;
+  color: var(--text-main);
+}
+
+.editor-content blockquote {
+  border-left: 4px solid var(--border-color-focus);
+  padding-left: 1rem;
+  margin-left: 0;
+  margin-right: 0;
+  font-style: italic;
+  color: var(--text-muted);
+}
