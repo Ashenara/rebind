@@ -38,13 +38,13 @@ export const ExcludedChapterList: React.FC<ExcludedChapterListProps> = ({
  <div key={`excluded-${chapter.id}`} className="w-full relative pb-1 mx-1">
  <div
  onClick={() => onJumpToIssue(chapter.id)}
- className={`rounded-md hover:bg-zinc-800/50 duration-150 p-3 flex items-center gap-3 cursor-pointer group select-none transition-colors border border-zinc-700/80 bg-zinc-950/20 hover:border-zinc-600`}
+ className={`rounded-md hover:bg-zinc-800/50 duration-150 p-3 flex items-center gap-3 cursor-pointer group select-none transition-colors border border-dashed border-zinc-800/50 bg-black hover:border-zinc-700 opacity-70 hover:opacity-100`}
  >
  <div className="shrink-0 text-white/50">
  <Square size={18} />
  </div>
  <div className="flex-1 flex flex-col gap-1 min-w-0">
- <div className="text-sm font-medium text-zinc-400">
+ <div className="text-sm font-medium text-zinc-500 line-through">
  {chapter.title}
  </div>
  <div className="text-[10px] text-zinc-400 flex items-center justify-between">

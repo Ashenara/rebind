@@ -18,6 +18,8 @@ interface ChapterListProps {
  onAddManualChapter: () => void;
  onDeleteChapter: (id: string) => void;
  onInsertChapterAt: (title: string, index: number) => void;
+ onBulkRename: () => void;
+ onAutoSequenceTitles: () => void;
  books: SourceBook[];
 }
 
@@ -30,6 +32,8 @@ export const ChapterList: React.FC<ChapterListProps> = ({
  onAddManualChapter,
  onDeleteChapter,
  onInsertChapterAt,
+ onBulkRename,
+ onAutoSequenceTitles,
  books,
 }) => {
  const [searchTerm, setSearchTerm] = useState('');
@@ -359,14 +363,14 @@ export const ChapterList: React.FC<ChapterListProps> = ({
 
  {/* Sequence Issues Summary Banner */}
  {issues.length > 0 && (
- <div className="mb-3 p-2.5 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-between text-xs text-zinc-300">
+ <div className="mb-3 p-2.5 rounded-lg bg-amber-900/20 border border-amber-700/50 flex items-center justify-between text-xs text-amber-200">
  <div className="flex items-center gap-1.5 font-medium">
- <AlertTriangle size={14} className="text-zinc-400" />
+ <AlertTriangle size={14} className="text-amber-400" />
  <span>{issues.length} sequence {issues.length === 1 ? 'issue' : 'issues'} detected</span>
  </div>
  <button
  onClick={() => handleJumpToIssue()}
- className="justify-center font-semibold rounded-md duration-150 hover:border-zinc-400 hover:text-zinc-100 py-1 px-2 text-[10px] bg-zinc-800/80 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 flex items-center gap-1 cursor-pointer transition-colors"
+ className="justify-center font-semibold rounded-md duration-150 hover:border-amber-400 hover:text-amber-100 py-1 px-2 text-[10px] bg-amber-900/40 hover:bg-amber-800/60 border border-amber-700/50 text-amber-300 flex items-center gap-1 cursor-pointer transition-colors"
  >
  <ChevronDown size={12} />
  Jump to Next Issue
@@ -384,6 +388,8 @@ export const ChapterList: React.FC<ChapterListProps> = ({
  handleToggleAll={handleToggleAll}
  handleToggleVolumes={handleToggleVolumes}
  handleExcludeSmallChapters={handleExcludeSmallChapters}
+ onBulkRename={onBulkRename}
+ onAutoSequenceTitles={onAutoSequenceTitles}
  splitViewMode={splitViewMode}
  setSplitViewMode={setSplitViewMode}
  />

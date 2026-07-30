@@ -54,22 +54,44 @@ export const ChapterListItem: React.FC<ChapterListItemProps> = ({
  virtualMeasureRef,
  dataIndex,
 }) => {
- return (
- <div
- key={chapter.id}
- data-index={dataIndex}
- ref={virtualMeasureRef}
- style={style}
- >
- <div
- id={`chapter-${chapter.id}`}
- draggable
- onDragStart={(e) => handleDragStart(e, chapter.originalIndex)}
- onDragOver={(e) => handleDragOver(e, chapter.originalIndex)}
- onDrop={(e) => handleDrop(e, chapter.originalIndex)}
- onClick={() => onSelectChapter(chapter.id)}
- className={`bg-zinc-900/40 border border-zinc-800 rounded-md hover:border-zinc-500 hover:bg-zinc-800/50 transition-colors duration-150 p-3 mx-1 flex items-center gap-3 cursor-pointer group select-none ${isSelected ? 'border-zinc-500 bg-zinc-800/40 ring-1 ring-zinc-500/50' : hasDuplicate ? 'border-zinc-600 bg-zinc-900 hover:border-amber-500/60 ring-1 ring-amber-500/20' : isOutOfOrder ? 'border-zinc-600 bg-zinc-900 hover:border-zinc-500 ring-1 ring-zinc-700' : chapter.exclude ? 'opacity-55 border-zinc-800 bg-zinc-950/10' : 'border-zinc-800 hover:border-zinc-700'}`}
- >
+  let wrapperClasses = 'border-zinc-800 hover:border-zinc-700 bg-zinc-900/40 hover:bg-zinc-800/50';
+  if (isSelected) {
+    wrapperClasses = 'border-zinc-500 bg-zinc-800/40 ring-1 ring-zinc-500/50';
+  } else if (chapter.exclude) {
+    wrapperClasses = 'opacity-40 border-zinc-800/50 bg-black border-dashed hover:border-zinc-700 hover:opacity-60';
+  } else if (hasDuplicate) {
+    wrapperClasses = 'border-rose-500/40 bg-rose-500/5 hover:border-rose-500/60 ring-1 ring-rose-500/20';
+  } else if (isOutOfOrder) {
+    wrapperClasses = 'border-amber-500/40 bg-amber-500/5 hover:border-amber-500/60 ring-1 ring-amber-500/20';
+  }
+
+  let badgeClasses = 'text-zinc-400 border-zinc-800 bg-zinc-800/50 hover:bg-violet-500/10 hover:border-zinc-500/30';
+  if (chapter.exclude) {
+    badgeClasses = 'text-zinc-600 border-zinc-800/50 bg-transparent';
+  } else if (hasDuplicate) {
+    badgeClasses = 'text-rose-400 border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 hover:border-rose-500/50';
+  } else if (isOutOfOrder) {
+    badgeClasses = 'text-amber-400 border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 hover:border-amber-500/50';
+  }
+
+  const titleClasses = chapter.exclude ? 'text-zinc-500 line-through' : 'text-white';
+
+  return (
+  <div
+  key={chapter.id}
+  data-index={dataIndex}
+  ref={virtualMeasureRef}
+  style={style}
+  >
+  <div
+  id={`chapter-${chapter.id}`}
+  draggable
+  onDragStart={(e) => handleDragStart(e, chapter.originalIndex)}
+  onDragOver={(e) => handleDragOver(e, chapter.originalIndex)}
+  onDrop={(e) => handleDrop(e, chapter.originalIndex)}
+  onClick={() => onSelectChapter(chapter.id)}
+  className={`rounded-md transition-colors duration-150 p-3 mx-1 flex items-center gap-3 cursor-pointer group select-none border ${wrapperClasses}`}
+  >
  {/* Drag Handle */}
  <div className="text-zinc-600 group-hover:text-zinc-400 cursor-grab active:cursor-grabbing p-1">
  <GripVertical size={16} />
@@ -99,13 +121,13 @@ export const ChapterListItem: React.FC<ChapterListItemProps> = ({
  value={chapter.title}
  onChange={(e) => onUpdateChapter(chapter.id, { title: e.target.value })}
  onClick={() => onSelectChapter(chapter.id)}
- className="bg-transparent border-b border-transparent hover:border-zinc-700/80 focus:border-zinc-500 focus:outline-none text-sm font-medium text-white w-full py-0.5 truncate"
+ className={`bg-transparent border-b border-transparent hover:border-zinc-700/80 focus:border-zinc-500 focus:outline-none text-sm font-medium w-full py-0.5 truncate ${titleClasses}`}
  aria-label={`Edit title for Chapter ${chapter.originalIndex + 1}`}
  />
  <div className="flex items-center gap-2 flex-wrap">
  <button
  onClick={(e) => handleMoveToPosition(chapter.originalIndex, e)}
- className={`text-[10px] hover:text-zinc-300 bg-zinc-800/50 hover:bg-violet-500/10 px-1.5 py-0.5 rounded border hover:border-zinc-500/30 cursor-pointer transition-all flex items-center gap-1 ${hasDuplicate ? 'text-zinc-400 border-zinc-700 bg-zinc-800' : isOutOfOrder ? 'text-zinc-300 border-zinc-700 bg-zinc-800' : 'text-zinc-400 border-zinc-800'}`}
+ className={`text-[10px] px-1.5 py-0.5 rounded border cursor-pointer transition-all flex items-center gap-1 ${badgeClasses}`}
  title={
  hasDuplicate
  ? 'Duplicate chapter number detected (Click to change position)'
