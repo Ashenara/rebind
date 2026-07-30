@@ -67,7 +67,7 @@ export const ReconstructionSettingsModal: React.FC<ReconstructionSettingsModalPr
             <div className="flex flex-col gap-2">
               {currentOrder.map((panel, idx) => (
                 <div key={panel} className="flex items-center justify-between p-2 rounded-lg bg-zinc-800/30 border border-zinc-700/50">
-                  <span className="text-xs font-medium text-zinc-300 capitalize">{panel} Pane</span>
+                  <span className="text-xs font-medium text-zinc-300 capitalize">{panel === 'inspector' ? 'Metadata' : panel} Pane</span>
                   <div className="flex items-center gap-1">
                     <button
                       disabled={idx === 0}

@@ -759,7 +759,7 @@ export default function App() {
           className={`flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${mobileTab === 'inspector' ? 'text-violet-400' : 'text-zinc-500 hover:text-zinc-300'}`}
         >
           <Settings size={20} />
-          <span className="text-[10px] font-medium">Inspector</span>
+          <span className="text-[10px] font-medium">Metadata</span>
         </button>
       </div>
 
