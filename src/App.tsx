@@ -1,5 +1,5 @@
 import { useState, useEffect, startTransition, useCallback } from 'react';
-import { Sparkles, CheckCircle2 } from 'lucide-react';
+import { Sparkles, CheckCircle2, List, FileText, Settings } from 'lucide-react';
 import type { SourceBook, Chapter, ReconstructionSettings } from './types';
 import { DropZone } from './components/layout/DropZone';
 import { AppHeader } from './components/layout/AppHeader';
@@ -12,6 +12,7 @@ import { cleanChapterContent, applyRegexRules } from './utils/textCleaner';
 import { generateEpub } from './utils/epubGenerator';
 import { RegexManagerModal } from './components/modals/RegexManagerModal';
 import { ReconstructionSettingsModal } from './components/modals/ReconstructionSettingsModal';
+import { BulkRenameModal } from './components/modals/BulkRenameModal';
 import { useGoogleLogin, googleLogout } from '@react-oauth/google';
 import { fetchSettingsFromDrive, uploadSettingsToDrive } from './lib/driveSync';
 
@@ -36,6 +37,7 @@ export default function App() {
  const [showSuccessOverlay, setShowSuccessOverlay] = useState(false);
  const [showRegexManager, setShowRegexManager] = useState(false);
  const [showReconstructionSettings, setShowReconstructionSettings] = useState(false);
+ const [showBulkRenameModal, setShowBulkRenameModal] = useState(false);
  const [logs, setLogs] = useState<string[]>([]);
 
   // Resizable columns & collapsible panels states
@@ -44,6 +46,9 @@ export default function App() {
   const [isSidebarMinimized, setIsSidebarMinimized] = useState(() => typeof window !== 'undefined' ? window.innerWidth <= 1280 : false);
   const [isLogsMinimized, setIsLogsMinimized] = useState(false);
   const [swapPanels, setSwapPanels] = useState(false);
+
+  // Mobile navigation state
+  const [mobileTab, setMobileTab] = useState<'spine' | 'editor' | 'inspector'>('editor');
 
   // Google Drive Sync states
   const [driveToken, setDriveToken] = useState<string | null>(null);
@@ -447,6 +452,23 @@ export default function App() {
  addLog(`[System] Inserted empty chapter "${title}" at index ${index + 1}.`);
  };
 
+  const handleBulkRename = (pattern: string, replacement: string) => {
+    setChapters(prev => prev.map(ch => {
+      try {
+        const regex = new RegExp(pattern, 'g');
+        const newTitle = ch.title.replace(regex, replacement).trim();
+        if (newTitle !== ch.title) {
+          return { ...ch, title: newTitle };
+        }
+      } catch (e) {}
+      return ch;
+    }));
+  };
+
+  const handleAutoSequenceTitles = () => {
+    setChapters(prev => prev.map((ch, index) => ({ ...ch, title: `Chapter ${index + 1}` })));
+  };
+
  // Clear workspace
  const handleClearAll = () => {
  if (window.confirm('Are you sure you want to clear your workspace? All imported chapters and manual edits will be lost.')) {
@@ -560,55 +582,81 @@ export default function App() {
       />
 
       {/* MAIN WRAPPER */}
-      <div className="flex-1 flex min-h-0 overflow-hidden bg-[#09090b]">
+      <div 
+        className="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden bg-[#09090b]"
+        style={{
+          '--spine-width': `${spineWidth}px`,
+          '--sidebar-width': `${sidebarWidth}px`
+        } as React.CSSProperties}
+      >
         
         {/* SWAP WRAPPER (Spine & Preview) */}
-        <div className={`flex-1 flex min-h-0 overflow-hidden ${swapPanels ? 'flex-row-reverse' : 'flex-row'}`}>
+        <div className={`
+          ${mobileTab === 'inspector' ? 'hidden' : 'flex'} md:flex
+          flex-1 min-h-0 overflow-hidden ${swapPanels ? 'md:flex-row-reverse' : 'md:flex-row'}
+        `}>
           {/* LEFT SIDEBAR (Explorer / Spine) */}
-          {chapters.length > 0 && (
-            <div
-              style={{ width: `${spineWidth}px` }}
-              className={`h-full flex flex-col shrink-0 overflow-hidden min-h-0 ${swapPanels ? 'border-l' : 'border-r'} border-zinc-800 bg-zinc-900/40 relative group`}
-            >
-              <ChapterList
-                chapters={chapters}
-                selectedChapterId={selectedChapterId}
-                onSelectChapter={setSelectedChapterId}
-                onUpdateChapter={handleUpdateChapter}
-                onReorderChapters={handleReorderChapters}
-                onAddManualChapter={handleAddManualChapter}
-                onDeleteChapter={handleDeleteChapter}
-                onInsertChapterAt={handleInsertChapterAt}
-                books={books}
-              />
-              {/* Resize Divider Drag Handle */}
-              <div
-                className={`absolute ${swapPanels ? 'left-0 -ml-1' : 'right-0'} top-0 bottom-0 w-2 cursor-col-resize hover:bg-zinc-700 active:bg-zinc-500 z-10 transition-colors`}
-                onMouseDown={handleSpineResizeStart}
-              />
-            </div>
-          )}
+          <div
+            className={`
+              ${mobileTab === 'spine' ? 'flex' : 'hidden'} md:flex 
+              w-full md:w-[var(--spine-width)] 
+              h-full flex-col shrink-0 overflow-hidden min-h-0 
+              ${swapPanels ? 'md:border-l' : 'md:border-r'} border-zinc-800 bg-zinc-900/40 relative group
+              ${chapters.length === 0 ? 'md:hidden' : ''}
+            `}
+          >
+            {chapters.length > 0 ? (
+              <>
+                <ChapterList
+                  chapters={chapters}
+                  selectedChapterId={selectedChapterId}
+                  onSelectChapter={setSelectedChapterId}
+                  onUpdateChapter={handleUpdateChapter}
+                  onReorderChapters={handleReorderChapters}
+                  onAddManualChapter={handleAddManualChapter}
+                  onDeleteChapter={handleDeleteChapter}
+                  onInsertChapterAt={handleInsertChapterAt}
+                  onBulkRename={() => setShowBulkRenameModal(true)}
+                  onAutoSequenceTitles={handleAutoSequenceTitles}
+                  books={books}
+                />
+                {/* Resize Divider Drag Handle */}
+                <div
+                  className={`hidden md:block absolute ${swapPanels ? 'left-0 -ml-1' : 'right-0'} top-0 bottom-0 w-2 cursor-col-resize hover:bg-zinc-700 active:bg-zinc-500 z-10 transition-colors`}
+                  onMouseDown={handleSpineResizeStart}
+                />
+              </>
+            ) : (
+              <div className="flex-1 flex items-center justify-center p-6 text-center text-sm text-zinc-500">
+                Import EPUB files in the Editor tab to populate the spine.
+              </div>
+            )}
+          </div>
 
           {/* CENTER PANE (Editor & Terminal) */}
-          <div className="flex-1 flex flex-col min-h-0 overflow-hidden relative">
+          <div className={`
+            ${mobileTab === 'editor' ? 'flex' : 'hidden'} md:flex 
+            flex-1 flex-col min-h-0 overflow-hidden relative
+          `}>
           <div className="flex-1 overflow-hidden flex flex-col min-h-0 bg-[#09090b]">
             {chapters.length === 0 ? (
-              <div className="flex-1 flex flex-col items-center justify-center p-8 max-w-2xl mx-auto w-full min-h-0 overflow-y-auto">
-                <div className="text-center mb-8 flex flex-col items-center">
-                  <div className="p-2 rounded-2xl bg-zinc-800 border border-zinc-700/50 text-zinc-300 mb-4 shadow-lg">
-                    <img src="/logo.svg" alt="ReBind" className="w-16 h-16 rounded-xl object-cover" />
+              <div className="flex-1 overflow-y-auto p-4 md:p-8 w-full">
+                <div className="flex flex-col items-center justify-center min-h-full max-w-2xl mx-auto w-full py-4">
+                  <div className="text-center mb-6 md:mb-8 flex flex-col items-center mt-auto">
+                    <div className="p-2 rounded-2xl bg-zinc-800 border border-zinc-700/50 text-zinc-300 mb-4 shadow-lg">
+                      <img src="/logo.svg" alt="ReBind" className="w-12 h-12 md:w-16 md:h-16 rounded-xl object-cover" />
+                    </div>
+                    <h2 className="text-xl md:text-2xl font-extrabold text-white mb-2">ReBind Workspace</h2>
+                    <p className="text-xs md:text-sm text-zinc-400 max-w-md leading-relaxed">
+                      Import ongoing chapter volumes, clean extraneous styles, reorder content files, and reconstruct them into a single clean EPUB 3 document.
+                    </p>
                   </div>
-                  <h2 className="text-2xl font-extrabold text-white mb-2">ReBind Workspace</h2>
-                  <p className="text-sm text-zinc-400 max-w-md leading-relaxed">
-                    Import ongoing chapter volumes, clean extraneous styles, reorder content files, and reconstruct them into a single clean EPUB 3 document.
-                  </p>
-                </div>
-                <div className="w-full">
-                  <DropZone onFilesSelected={handleFilesSelected} isProcessing={isProcessing} />
-                </div>
-                <div className="mt-6 flex items-center gap-3">
-                  <span className="text-xs text-zinc-400">Or start fresh:</span>
-                  <button
+                  <div className="w-full">
+                    <DropZone onFilesSelected={handleFilesSelected} isProcessing={isProcessing} />
+                  </div>
+                  <div className="mt-6 flex items-center gap-3 mb-auto">
+                    <span className="text-xs text-zinc-400">Or start fresh:</span>
+                    <button
                     onClick={handleAddManualChapter}
                     className="inline-flex items-center justify-center gap-1.5 px-4 py-1.5 text-xs font-semibold rounded-md cursor-pointer border border-zinc-700/80 transition-colors duration-150 bg-zinc-800/50 text-white hover:bg-zinc-800 hover:border-zinc-400 hover:text-zinc-100"
                     disabled={isProcessing}
@@ -618,7 +666,8 @@ export default function App() {
                   </button>
                 </div>
               </div>
-            ) : (
+            </div>
+          ) : (
               <ChapterPreview
                 chapter={chapters.find((c) => c.id === selectedChapterId) || null}
                 onUpdateChapter={handleUpdateChapter}
@@ -642,14 +691,17 @@ export default function App() {
 
         {/* RIGHT SIDEBAR (Inspector) */}
         {!isSidebarMinimized && (
-          <div className="relative h-full flex shrink-0 group">
+          <div className={`
+            ${mobileTab === 'inspector' ? 'flex' : 'hidden'} md:flex 
+            w-full md:w-[var(--sidebar-width)] 
+            relative h-full shrink-0 group
+          `}>
             {/* Drag Handle */}
             <div
-              className="absolute left-0 -ml-1 top-0 bottom-0 w-2 cursor-col-resize hover:bg-zinc-700 active:bg-zinc-500 z-10 transition-colors"
+              className="hidden md:block absolute left-0 -ml-1 top-0 bottom-0 w-2 cursor-col-resize hover:bg-zinc-700 active:bg-zinc-500 z-10 transition-colors"
               onMouseDown={handleSidebarResizeStart}
             />
             <AppSidebar
-              sidebarWidth={sidebarWidth}
               books={books}
               setBooks={setBooks}
               setChapters={setChapters}
@@ -664,6 +716,31 @@ export default function App() {
             />
           </div>
         )}
+      </div>
+
+      {/* MOBILE BOTTOM NAVIGATION */}
+      <div className="md:hidden shrink-0 h-14 bg-zinc-900 border-t border-zinc-800 flex items-center justify-around z-20 px-2 pb-safe">
+        <button
+          onClick={() => setMobileTab('spine')}
+          className={`flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${mobileTab === 'spine' ? 'text-violet-400' : 'text-zinc-500 hover:text-zinc-300'}`}
+        >
+          <List size={20} />
+          <span className="text-[10px] font-medium">Spine</span>
+        </button>
+        <button
+          onClick={() => setMobileTab('editor')}
+          className={`flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${mobileTab === 'editor' ? 'text-violet-400' : 'text-zinc-500 hover:text-zinc-300'}`}
+        >
+          <FileText size={20} />
+          <span className="text-[10px] font-medium">Editor</span>
+        </button>
+        <button
+          onClick={() => setMobileTab('inspector')}
+          className={`flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${mobileTab === 'inspector' ? 'text-violet-400' : 'text-zinc-500 hover:text-zinc-300'}`}
+        >
+          <Settings size={20} />
+          <span className="text-[10px] font-medium">Inspector</span>
+        </button>
       </div>
 
        {/* Regex Manager Modal */}
@@ -683,6 +760,12 @@ export default function App() {
   onClose={() => setShowReconstructionSettings(false)}
   />
   )}
+  <BulkRenameModal
+    chapters={chapters}
+    isOpen={showBulkRenameModal}
+    onClose={() => setShowBulkRenameModal(false)}
+    onApply={handleBulkRename}
+  />
 
   </div>
  );

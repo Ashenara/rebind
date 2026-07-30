@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, CheckSquare, Square, ChevronDown, Filter, Columns, BookOpen } from 'lucide-react';
+import { Search, CheckSquare, Square, ChevronDown, Filter, Columns, BookOpen, Type } from 'lucide-react';
 
 interface ChapterListToolbarProps {
  searchTerm: string;
@@ -9,6 +9,8 @@ interface ChapterListToolbarProps {
  handleToggleAll: (exclude: boolean) => void;
  handleToggleVolumes: (excludeMode: boolean) => void;
  handleExcludeSmallChapters: () => void;
+ onBulkRename: () => void;
+ onAutoSequenceTitles: () => void;
  splitViewMode: 'none' | 'issues' | 'excluded';
  setSplitViewMode: React.Dispatch<React.SetStateAction<'none' | 'issues' | 'excluded'>>;
 }
@@ -21,6 +23,8 @@ export const ChapterListToolbar: React.FC<ChapterListToolbarProps> = ({
  handleToggleAll,
  handleToggleVolumes,
  handleExcludeSmallChapters,
+ onBulkRename,
+ onAutoSequenceTitles,
  splitViewMode,
  setSplitViewMode,
 }) => {
@@ -87,9 +91,23 @@ export const ChapterListToolbar: React.FC<ChapterListToolbarProps> = ({
  >
  <BookOpen size={14} className="text-zinc-400" /> Exclude Vols
  </button>
+ <button
+ onClick={() => { onAutoSequenceTitles(); setShowBulkDropdown(false); }}
+ className="w-full text-left px-2 py-1.5 text-xs text-zinc-300 hover:text-white hover:bg-zinc-800/50 rounded flex items-center gap-2 transition-colors mt-1 pt-1 border-t border-zinc-700/50"
+ >
+ <Type size={14} className="text-[#00F0FF]" /> Auto-Sequence Titles
+ </button>
  </div>
  )}
  </div>
+ <button
+ onClick={onBulkRename}
+ className="font-semibold rounded-md cursor-pointer border border-zinc-700/80 transition-colors duration-150 bg-zinc-800/50 text-white hover:bg-zinc-800 hover:border-[#00F0FF]/50 hover:text-[#00F0FF] py-1.5 px-3 text-xs flex items-center gap-1.5 justify-center flex-1 min-w-27.5"
+ title="Auto-rename chapter titles using Regex"
+ >
+ <Search size={14} className="text-zinc-300" />
+ Bulk Rename
+ </button>
  <button
  onClick={handleExcludeSmallChapters}
  className="font-semibold rounded-md cursor-pointer border border-zinc-700/80 transition-colors duration-150 bg-zinc-800/50 text-white hover:bg-zinc-800 hover:border-zinc-400 hover:text-zinc-100 py-1.5 px-3 text-xs flex items-center gap-1.5 justify-center min-w-25"

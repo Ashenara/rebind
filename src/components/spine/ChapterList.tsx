@@ -18,6 +18,8 @@ interface ChapterListProps {
  onAddManualChapter: () => void;
  onDeleteChapter: (id: string) => void;
  onInsertChapterAt: (title: string, index: number) => void;
+ onBulkRename: () => void;
+ onAutoSequenceTitles: () => void;
  books: SourceBook[];
 }
 
@@ -30,6 +32,8 @@ export const ChapterList: React.FC<ChapterListProps> = ({
  onAddManualChapter,
  onDeleteChapter,
  onInsertChapterAt,
+ onBulkRename,
+ onAutoSequenceTitles,
  books,
 }) => {
  const [searchTerm, setSearchTerm] = useState('');
@@ -384,6 +388,8 @@ export const ChapterList: React.FC<ChapterListProps> = ({
  handleToggleAll={handleToggleAll}
  handleToggleVolumes={handleToggleVolumes}
  handleExcludeSmallChapters={handleExcludeSmallChapters}
+ onBulkRename={onBulkRename}
+ onAutoSequenceTitles={onAutoSequenceTitles}
  splitViewMode={splitViewMode}
  setSplitViewMode={setSplitViewMode}
  />

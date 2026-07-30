@@ -4,7 +4,6 @@ import { MetadataEditor } from '../editor/MetadataEditor';
 import type { SourceBook, Chapter } from '../../types';
 
 interface AppSidebarProps {
- sidebarWidth: number;
  books: SourceBook[];
  setBooks: React.Dispatch<React.SetStateAction<SourceBook[]>>;
  setChapters: React.Dispatch<React.SetStateAction<Chapter[]>>;
@@ -31,7 +30,6 @@ interface AppSidebarProps {
 }
 
 export const AppSidebar: React.FC<AppSidebarProps> = ({
- sidebarWidth,
  books,
  setBooks,
  setChapters,
@@ -46,8 +44,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
 }) => {
  return (
   <aside
-    className="border-l border-zinc-800 bg-[#09090b] flex flex-col min-h-0 shrink-0 transition-all duration-300"
-    style={{ width: `${sidebarWidth}px` }}
+    className="border-l border-zinc-800 bg-[#09090b] flex flex-col min-h-0 shrink-0 transition-all duration-300 w-full"
   >
     {/* Sidebar Header */}
     <div className="p-3 border-b border-zinc-800 shrink-0 flex items-center justify-between">

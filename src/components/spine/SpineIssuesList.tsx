@@ -39,16 +39,24 @@ export const SpineIssuesList: React.FC<SpineIssuesListProps> = ({
  const isGap = issue.type === 'gap';
  const isDuplicate = issue.type === 'duplicate_number';
 
+ let wrapperClasses = 'border-amber-500/40 bg-amber-500/5 hover:border-amber-500/60 ring-1 ring-amber-500/20';
+ let iconClasses = 'text-amber-400';
+ 
+ if (isDuplicate) {
+   wrapperClasses = 'border-rose-500/40 bg-rose-500/5 hover:border-rose-500/60 ring-1 ring-rose-500/20';
+   iconClasses = 'text-rose-400';
+ } else if (isGap) {
+   wrapperClasses = 'border-amber-500/40 bg-amber-500/5 hover:border-amber-500/60 ring-1 ring-amber-500/20 border-dashed';
+ }
+
  return (
  <div key={`issue-${idx}`} className="w-full relative pb-1 mx-1">
  <div
  onClick={() => onJumpToIssue(targetId)}
- className={`bg-zinc-900/40 border-zinc-800 rounded-md hover:border-zinc-500 hover:bg-zinc-800/50 duration-150 p-3 flex items-center gap-3 cursor-pointer group select-none transition-colors border ${isGap ? 'border-zinc-700 bg-zinc-800 hover:border-zinc-500 hover:bg-zinc-700' : isDuplicate ? 'border-zinc-600 bg-zinc-800 hover:border-zinc-500 hover:bg-zinc-700' : 'border-zinc-700 bg-zinc-800 hover:border-zinc-500 hover:bg-zinc-700'}`}
+ className={`rounded-md transition-colors duration-150 p-3 flex items-center gap-3 cursor-pointer group select-none border ${wrapperClasses}`}
  >
- <div className="shrink-0 text-white/70">
- {isGap ? <AlertTriangle size={18} className="text-zinc-400" /> :
- isDuplicate ? <AlertCircle size={18} className="text-zinc-400" /> :
- <AlertCircle size={18} className="text-zinc-300" />}
+ <div className={`shrink-0 ${iconClasses}`}>
+ {isGap ? <AlertTriangle size={18} /> : <AlertCircle size={18} />}
  </div>
  <div className="flex-1 flex flex-col gap-1 min-w-0">
  <div className="text-sm font-medium text-gray-200">
@@ -66,7 +74,7 @@ export const SpineIssuesList: React.FC<SpineIssuesListProps> = ({
  onInsertChapterAt(`Chapter ${missingNum}`, afterIndex + 1);
  }
  }}
- className="justify-center font-semibold rounded-md transition-colors duration-150 hover:border-zinc-400 hover:text-zinc-100 py-0.5 px-2 text-[10px] bg-zinc-800 hover:bg-zinc-700 border border-zinc-600 text-zinc-200 flex items-center gap-1 cursor-pointer shrink-0 ml-2"
+ className="justify-center font-semibold rounded-md transition-colors duration-150 hover:border-amber-400 hover:text-amber-100 py-0.5 px-2 text-[10px] bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-200 flex items-center gap-1 cursor-pointer shrink-0 ml-2"
  >
  <Plus size={10} />
  Insert {issue.missingNumbers?.[0]}
