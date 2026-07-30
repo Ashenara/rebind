@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { X, Settings, Bold, Italic, Underline, WrapText, Download, Upload } from 'lucide-react';
+import { X, Settings, Bold, Italic, Underline, WrapText, Download, Upload, ChevronUp, ChevronDown } from 'lucide-react';
 import type { ReconstructionSettings } from '../../types';
 
 interface ReconstructionSettingsModalProps {
@@ -33,16 +33,18 @@ export const ReconstructionSettingsModal: React.FC<ReconstructionSettingsModalPr
     });
   };
 
+  const currentOrder = settings.layoutOrder || ['spine', 'editor', 'inspector'];
+
   return (
     <dialog
       ref={dialogRef}
       onClose={onClose}
       className="bg-transparent p-0 m-auto backdrop:bg-zinc-950/60 backdrop:backdrop-blur-sm open:animate-in open:fade-in open:zoom-in duration-200"
     >
-      <div className="bg-zinc-900/90 border border-zinc-700/80 rounded-xl hover:border-zinc-600 transition-colors duration-150 w-[90vw] max-w-md shadow-2xl flex flex-col overflow-hidden">
+      <div className="bg-zinc-900/90 border border-zinc-700/80 rounded-xl hover:border-zinc-600 transition-colors duration-150 w-[90vw] max-w-md shadow-2xl flex flex-col overflow-hidden max-h-[90vh]">
         
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-zinc-700/80 bg-zinc-950/20">
+        <div className="flex items-center justify-between p-4 border-b border-zinc-700/80 bg-zinc-950/20 shrink-0">
           <h2 className="text-lg font-semibold text-white flex items-center gap-2">
             <Settings size={18} className="text-zinc-300" />
             Reconstruction Options
@@ -56,7 +58,47 @@ export const ReconstructionSettingsModal: React.FC<ReconstructionSettingsModalPr
         </div>
 
         {/* Content */}
-        <div className="p-5 flex flex-col gap-6">
+        <div className="p-5 flex flex-col gap-6 overflow-y-auto">
+
+          <div className="flex flex-col gap-3 pb-2 border-b border-zinc-800/80">
+            <span className="block text-[0.75rem] font-bold text-zinc-400 uppercase tracking-widest mb-1">
+              Layout Order (Left to Right)
+            </span>
+            <div className="flex flex-col gap-2">
+              {currentOrder.map((panel, idx) => (
+                <div key={panel} className="flex items-center justify-between p-2 rounded-lg bg-zinc-800/30 border border-zinc-700/50">
+                  <span className="text-xs font-medium text-zinc-300 capitalize">{panel} Pane</span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      disabled={idx === 0}
+                      onClick={() => {
+                        const newOrder = [...currentOrder];
+                        [newOrder[idx], newOrder[idx - 1]] = [newOrder[idx - 1], newOrder[idx]];
+                        onSave({ ...settings, layoutOrder: newOrder });
+                      }}
+                      className="p-1 text-zinc-400 hover:text-white disabled:opacity-30 cursor-pointer transition-colors"
+                    >
+                      <ChevronUp size={14} />
+                    </button>
+                    <button
+                      disabled={idx === currentOrder.length - 1}
+                      onClick={() => {
+                        const newOrder = [...currentOrder];
+                        [newOrder[idx], newOrder[idx + 1]] = [newOrder[idx + 1], newOrder[idx]];
+                        onSave({ ...settings, layoutOrder: newOrder });
+                      }}
+                      className="p-1 text-zinc-400 hover:text-white disabled:opacity-30 cursor-pointer transition-colors"
+                    >
+                      <ChevronDown size={14} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <span className="text-[10px] text-zinc-500 mb-2">
+              Change the visual order of the Spine, Editor, and Inspector panes on desktop.
+            </span>
+          </div>
           
           <div className="flex flex-col gap-3">
             <span className="block text-[0.75rem] font-bold text-zinc-400 uppercase tracking-widest mb-1">

@@ -41,14 +41,11 @@ export default function App() {
  const [logs, setLogs] = useState<string[]>([]);
 
   // Resizable columns & collapsible panels states
+  // App layout states
+  const [mobileTab, setMobileTab] = useState<'spine' | 'editor' | 'inspector'>('editor');
   const [spineWidth, setSpineWidth] = useState(() => typeof window !== 'undefined' ? Math.min(450, Math.max(280, window.innerWidth * 0.28)) : 340);
   const [sidebarWidth, setSidebarWidth] = useState(320);
-  const [isSidebarMinimized, setIsSidebarMinimized] = useState(() => typeof window !== 'undefined' ? window.innerWidth <= 1280 : false);
   const [isLogsMinimized, setIsLogsMinimized] = useState(false);
-  const [swapPanels, setSwapPanels] = useState(false);
-
-  // Mobile navigation state
-  const [mobileTab, setMobileTab] = useState<'spine' | 'editor' | 'inspector'>('editor');
 
   // Google Drive Sync states
   const [driveToken, setDriveToken] = useState<string | null>(null);
@@ -59,12 +56,13 @@ export default function App() {
   const startX = e.clientX;
   const startWidth = spineWidth;
   let rafId: number | null = null;
+  const isRightOfEditor = settings.layoutOrder.indexOf('spine') > settings.layoutOrder.indexOf('editor');
 
   const handleMouseMove = (moveEvent: MouseEvent) => {
   if (rafId) cancelAnimationFrame(rafId);
   rafId = requestAnimationFrame(() => {
   const deltaX = moveEvent.clientX - startX;
-  const effectiveDelta = swapPanels ? -deltaX : deltaX;
+  const effectiveDelta = isRightOfEditor ? -deltaX : deltaX;
   // Restrict width to between 240px and max screen width
   const newWidth = Math.max(240, Math.min(window.innerWidth - 100, startWidth + effectiveDelta));
   setSpineWidth(newWidth);
@@ -86,12 +84,14 @@ export default function App() {
   const startX = e.clientX;
   const startWidth = sidebarWidth;
   let rafId: number | null = null;
+  const isLeftOfEditor = settings.layoutOrder.indexOf('inspector') < settings.layoutOrder.indexOf('editor');
 
   const handleMouseMove = (moveEvent: MouseEvent) => {
   if (rafId) cancelAnimationFrame(rafId);
   rafId = requestAnimationFrame(() => {
-  const deltaX = startX - moveEvent.clientX; // Invert because it's on the right
-  const newWidth = Math.max(200, Math.min(600, startWidth + deltaX));
+  const deltaX = startX - moveEvent.clientX;
+  const effectiveDelta = isLeftOfEditor ? -deltaX : deltaX;
+  const newWidth = Math.max(200, Math.min(600, startWidth + effectiveDelta));
   setSidebarWidth(newWidth);
   });
   };
@@ -119,24 +119,41 @@ export default function App() {
 
  // Settings state
  const [settings, setSettings] = useState<ReconstructionSettings>(() => {
- try {
- const saved = localStorage.getItem('rebind_settings');
- if (saved) return JSON.parse(saved);
- } catch {
- console.warn('Failed to load settings from localStorage');
- }
- return {
+ const defaultSettings = {
  keepBold: true,
  keepItalic: true,
  keepUnderline: true,
  keepBrTags: true,
  regexRules: [],
+ layoutOrder: ['spine', 'editor', 'inspector'],
+ hiddenPanels: [],
  };
+
+ try {
+ const saved = localStorage.getItem('rebind_settings');
+ if (saved) {
+ const parsed = JSON.parse(saved);
+ return { ...defaultSettings, ...parsed };
+ }
+ } catch {
+ console.warn('Failed to load settings from localStorage');
+ }
+ return defaultSettings;
  });
 
   // Add a log message
   const addLog = useCallback((msg: string) => {
   setLogs((prev) => [...prev, msg]);
+  }, []);
+
+  const handleTogglePanel = useCallback((panelId: string) => {
+    setSettings((prev) => {
+      const hidden = prev.hiddenPanels || [];
+      const newHidden = hidden.includes(panelId)
+        ? hidden.filter(id => id !== panelId)
+        : [...hidden, panelId];
+      return { ...prev, hiddenPanels: newHidden };
+    });
   }, []);
 
   // Google Drive Login handler
@@ -567,15 +584,12 @@ export default function App() {
         setShowReconstructionSettings={setShowReconstructionSettings}
         isLogsMinimized={isLogsMinimized}
         setIsLogsMinimized={setIsLogsMinimized}
-        isSidebarMinimized={isSidebarMinimized}
-        setIsSidebarMinimized={setIsSidebarMinimized}
+        onTogglePanel={handleTogglePanel}
         handleExport={handleExport}
         handleClearAll={handleClearAll}
         isProcessing={isProcessing}
         hasActiveChapters={chapters.some((c) => !c.exclude)}
         hasBooks={books.length > 0}
-        swapPanels={swapPanels}
-        setSwapPanels={setSwapPanels}
         driveToken={driveToken}
         onDriveLogin={handleDriveLogin}
         onDriveLogout={handleDriveLogout}
@@ -590,20 +604,17 @@ export default function App() {
         } as React.CSSProperties}
       >
         
-        {/* SWAP WRAPPER (Spine & Preview) */}
-        <div className={`
-          ${mobileTab === 'inspector' ? 'hidden' : 'flex'} md:flex
-          flex-1 min-h-0 overflow-hidden ${swapPanels ? 'md:flex-row-reverse' : 'md:flex-row'}
-        `}>
-          {/* LEFT SIDEBAR (Explorer / Spine) */}
+        {/* SPINE PANE */}
+        {!settings.hiddenPanels?.includes('spine') && (
           <div
             className={`
               ${mobileTab === 'spine' ? 'flex' : 'hidden'} md:flex 
               w-full md:w-[var(--spine-width)] 
               h-full flex-col shrink-0 overflow-hidden min-h-0 
-              ${swapPanels ? 'md:border-l' : 'md:border-r'} border-zinc-800 bg-zinc-900/40 relative group
+              ${(settings.layoutOrder?.indexOf('spine') ?? 0) < (settings.layoutOrder?.indexOf('editor') ?? 1) ? 'md:border-r' : 'md:border-l'} border-zinc-800 bg-zinc-900/40 relative group
               ${chapters.length === 0 ? 'md:hidden' : ''}
             `}
+            style={{ order: settings.layoutOrder?.indexOf('spine') ?? 0 }}
           >
             {chapters.length > 0 ? (
               <>
@@ -622,7 +633,7 @@ export default function App() {
                 />
                 {/* Resize Divider Drag Handle */}
                 <div
-                  className={`hidden md:block absolute ${swapPanels ? 'left-0 -ml-1' : 'right-0'} top-0 bottom-0 w-2 cursor-col-resize hover:bg-zinc-700 active:bg-zinc-500 z-10 transition-colors`}
+                  className={`hidden md:block absolute ${(settings.layoutOrder?.indexOf('spine') ?? 0) < (settings.layoutOrder?.indexOf('editor') ?? 1) ? 'right-0' : 'left-0 -ml-1'} top-0 bottom-0 w-2 cursor-col-resize hover:bg-zinc-700 active:bg-zinc-500 z-10 transition-colors`}
                   onMouseDown={handleSpineResizeStart}
                 />
               </>
@@ -632,73 +643,82 @@ export default function App() {
               </div>
             )}
           </div>
+        )}
 
-          {/* CENTER PANE (Editor & Terminal) */}
-          <div className={`
-            ${mobileTab === 'editor' ? 'flex' : 'hidden'} md:flex 
-            flex-1 flex-col min-h-0 overflow-hidden relative
-          `}>
-          <div className="flex-1 overflow-hidden flex flex-col min-h-0 bg-[#09090b]">
-            {chapters.length === 0 ? (
-              <div className="flex-1 overflow-y-auto p-4 md:p-8 w-full">
-                <div className="flex flex-col items-center justify-center min-h-full max-w-2xl mx-auto w-full py-4">
-                  <div className="text-center mb-6 md:mb-8 flex flex-col items-center mt-auto">
-                    <div className="p-2 rounded-2xl bg-zinc-800 border border-zinc-700/50 text-zinc-300 mb-4 shadow-lg">
-                      <img src="/logo.svg" alt="ReBind" className="w-12 h-12 md:w-16 md:h-16 rounded-xl object-cover" />
+        {/* CENTER PANE (Editor & Terminal) */}
+        {!settings.hiddenPanels?.includes('editor') && (
+          <div 
+            className={`
+              ${mobileTab === 'editor' ? 'flex' : 'hidden'} md:flex 
+              flex-1 flex-col min-h-0 overflow-hidden relative
+            `}
+            style={{ order: settings.layoutOrder?.indexOf('editor') ?? 1 }}
+          >
+            <div className="flex-1 overflow-hidden flex flex-col min-h-0 bg-[#09090b]">
+              {chapters.length === 0 ? (
+                <div className="flex-1 overflow-y-auto p-4 md:p-8 w-full">
+                  <div className="flex flex-col items-center justify-center min-h-full max-w-2xl mx-auto w-full py-4">
+                    <div className="text-center mb-6 md:mb-8 flex flex-col items-center mt-auto">
+                      <div className="p-2 rounded-2xl bg-zinc-800 border border-zinc-700/50 text-zinc-300 mb-4 shadow-lg">
+                        <img src="/logo.svg" alt="ReBind" className="w-12 h-12 md:w-16 md:h-16 rounded-xl object-cover" />
+                      </div>
+                      <h2 className="text-xl md:text-2xl font-extrabold text-white mb-2">ReBind Workspace</h2>
+                      <p className="text-xs md:text-sm text-zinc-400 max-w-md leading-relaxed">
+                        Import ongoing chapter volumes, clean extraneous styles, reorder content files, and reconstruct them into a single clean EPUB 3 document.
+                      </p>
                     </div>
-                    <h2 className="text-xl md:text-2xl font-extrabold text-white mb-2">ReBind Workspace</h2>
-                    <p className="text-xs md:text-sm text-zinc-400 max-w-md leading-relaxed">
-                      Import ongoing chapter volumes, clean extraneous styles, reorder content files, and reconstruct them into a single clean EPUB 3 document.
-                    </p>
+                    <div className="w-full">
+                      <DropZone onFilesSelected={handleFilesSelected} isProcessing={isProcessing} />
+                    </div>
+                    <div className="mt-6 flex items-center gap-3 mb-auto">
+                      <span className="text-xs text-zinc-400">Or start fresh:</span>
+                      <button
+                        onClick={handleAddManualChapter}
+                        className="inline-flex items-center justify-center gap-1.5 px-4 py-1.5 text-xs font-semibold rounded-md cursor-pointer border border-zinc-700/80 transition-colors duration-150 bg-zinc-800/50 text-white hover:bg-zinc-800 hover:border-zinc-400 hover:text-zinc-100"
+                        disabled={isProcessing}
+                      >
+                        <Sparkles size={14} className="text-zinc-300" />
+                        Create Empty Chapter
+                      </button>
+                    </div>
                   </div>
-                  <div className="w-full">
-                    <DropZone onFilesSelected={handleFilesSelected} isProcessing={isProcessing} />
-                  </div>
-                  <div className="mt-6 flex items-center gap-3 mb-auto">
-                    <span className="text-xs text-zinc-400">Or start fresh:</span>
-                    <button
-                    onClick={handleAddManualChapter}
-                    className="inline-flex items-center justify-center gap-1.5 px-4 py-1.5 text-xs font-semibold rounded-md cursor-pointer border border-zinc-700/80 transition-colors duration-150 bg-zinc-800/50 text-white hover:bg-zinc-800 hover:border-zinc-400 hover:text-zinc-100"
-                    disabled={isProcessing}
-                  >
-                    <Sparkles size={14} className="text-zinc-300" />
-                    Create Empty Chapter
-                  </button>
                 </div>
-              </div>
+              ) : (
+                <ChapterPreview
+                  chapter={chapters.find((c) => c.id === selectedChapterId) || null}
+                  onUpdateChapter={handleUpdateChapter}
+                  settings={settings}
+                  onTriggerReclean={handleTriggerReclean}
+                />
+              )}
             </div>
-          ) : (
-              <ChapterPreview
-                chapter={chapters.find((c) => c.id === selectedChapterId) || null}
-                onUpdateChapter={handleUpdateChapter}
-                settings={settings}
-                onTriggerReclean={handleTriggerReclean}
-              />
+
+            {/* Bottom Terminal Panel */}
+            {!isLogsMinimized && (
+              <div className="h-62.5 shrink-0 border-t border-zinc-800 bg-[#09090b] flex flex-col">
+                <LogConsole
+                  logs={logs}
+                  onClearLogs={handleClearLogs}
+                />
+              </div>
             )}
           </div>
-
-          {/* Bottom Terminal Panel */}
-          {!isLogsMinimized && (
-            <div className="h-62.5 shrink-0 border-t border-zinc-800 bg-[#09090b] flex flex-col">
-              <LogConsole
-                logs={logs}
-                onClearLogs={handleClearLogs}
-              />
-            </div>
-          )}
-        </div> {/* END CENTER PANE */}
-        </div> {/* END SWAP WRAPPER */}
+        )}
 
         {/* RIGHT SIDEBAR (Inspector) */}
-        {!isSidebarMinimized && (
-          <div className={`
-            ${mobileTab === 'inspector' ? 'flex' : 'hidden'} md:flex 
-            w-full md:w-[var(--sidebar-width)] 
-            relative h-full shrink-0 group
-          `}>
+        {!settings.hiddenPanels?.includes('inspector') && (
+          <div 
+            className={`
+              ${mobileTab === 'inspector' ? 'flex' : 'hidden'} md:flex 
+              w-full md:w-[var(--sidebar-width)] 
+              relative h-full shrink-0 group
+              ${(settings.layoutOrder?.indexOf('inspector') ?? 2) > (settings.layoutOrder?.indexOf('editor') ?? 1) ? 'md:border-l' : 'md:border-r'} border-zinc-800
+            `}
+            style={{ order: settings.layoutOrder?.indexOf('inspector') ?? 2 }}
+          >
             {/* Drag Handle */}
             <div
-              className="hidden md:block absolute left-0 -ml-1 top-0 bottom-0 w-2 cursor-col-resize hover:bg-zinc-700 active:bg-zinc-500 z-10 transition-colors"
+              className={`hidden md:block absolute ${(settings.layoutOrder?.indexOf('inspector') ?? 2) > (settings.layoutOrder?.indexOf('editor') ?? 1) ? 'left-0 -ml-1' : 'right-0'} top-0 bottom-0 w-2 cursor-col-resize hover:bg-zinc-700 active:bg-zinc-500 z-10 transition-colors`}
               onMouseDown={handleSidebarResizeStart}
             />
             <AppSidebar

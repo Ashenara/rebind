@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Regex, Terminal, Sparkles, Trash2, ArrowRightLeft, Settings, Coffee, Menu, X } from 'lucide-react';
+import { Regex, Terminal, Sparkles, Trash2, Settings, Coffee, Menu, X, List, FileText, PanelRightClose } from 'lucide-react';
 import type { ReconstructionSettings } from '../../types';
 
 interface AppHeaderProps {
@@ -8,15 +8,12 @@ interface AppHeaderProps {
  setShowReconstructionSettings: React.Dispatch<React.SetStateAction<boolean>>;
  isLogsMinimized: boolean;
  setIsLogsMinimized: React.Dispatch<React.SetStateAction<boolean>>;
- isSidebarMinimized: boolean;
- setIsSidebarMinimized: React.Dispatch<React.SetStateAction<boolean>>;
+ onTogglePanel: (panelId: string) => void;
  handleExport: () => Promise<void>;
  handleClearAll: () => void;
  isProcessing: boolean;
  hasActiveChapters: boolean;
  hasBooks: boolean;
- swapPanels: boolean;
- setSwapPanels: React.Dispatch<React.SetStateAction<boolean>>;
  driveToken: string | null;
  onDriveLogin: () => void;
  onDriveLogout: () => void;
@@ -28,15 +25,12 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
  setShowReconstructionSettings,
  isLogsMinimized,
  setIsLogsMinimized,
- isSidebarMinimized,
- setIsSidebarMinimized,
+ onTogglePanel,
  handleExport,
  handleClearAll,
  isProcessing,
  hasActiveChapters,
  hasBooks,
- swapPanels,
- setSwapPanels,
  driveToken,
  onDriveLogin,
  onDriveLogout
@@ -126,11 +120,27 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
      {/* Desktop Global Actions */}
      <div className="hidden md:flex items-center gap-2 md:gap-3">
       <button
-       onClick={() => setSwapPanels(!swapPanels)}
-       className={`p-1.5 rounded-md hover:bg-zinc-800 border transition-colors flex items-center gap-1.5 text-xs ${swapPanels ? 'bg-violet-600/20 text-violet-400 border-violet-500/30' : 'bg-zinc-800/50 text-zinc-400 border-zinc-700/80 hover:text-white'}`}
-       title="Swap Spine and Preview Panels"
+       onClick={() => onTogglePanel('spine')}
+       className={`p-1.5 rounded-md hover:bg-zinc-800 border transition-colors flex items-center gap-1.5 text-xs ${!settings.hiddenPanels?.includes('spine') ? 'bg-zinc-800/50 text-zinc-400 border-zinc-700/80 hover:text-white' : 'bg-zinc-700 text-white border-zinc-600'}`}
+       title="Toggle Spine Panel"
       >
-       <ArrowRightLeft size={14} /> Swap
+       <List size={14} /> Spine
+      </button>
+
+      <button
+       onClick={() => onTogglePanel('editor')}
+       className={`p-1.5 rounded-md hover:bg-zinc-800 border transition-colors flex items-center gap-1.5 text-xs ${!settings.hiddenPanels?.includes('editor') ? 'bg-zinc-800/50 text-zinc-400 border-zinc-700/80 hover:text-white' : 'bg-zinc-700 text-white border-zinc-600'}`}
+       title="Toggle Editor Panel"
+      >
+       <FileText size={14} /> Editor
+      </button>
+
+      <button
+       onClick={() => onTogglePanel('inspector')}
+       className={`p-1.5 rounded-md hover:bg-zinc-800 border transition-colors flex items-center gap-1.5 text-xs ${!settings.hiddenPanels?.includes('inspector') ? 'bg-zinc-800/50 text-zinc-400 border-zinc-700/80 hover:text-white' : 'bg-zinc-700 text-white border-zinc-600'}`}
+       title="Toggle Inspector Sidebar"
+      >
+       <PanelRightClose size={14} /> Inspector
       </button>
 
       <button
@@ -139,14 +149,6 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
        title="Toggle Terminal / Log Console"
       >
        <Terminal size={14} /> Terminal
-      </button>
-
-      <button
-       onClick={() => setIsSidebarMinimized(!isSidebarMinimized)}
-       className={`p-1.5 rounded-md hover:bg-zinc-800 border transition-colors flex items-center gap-1.5 text-xs ${isSidebarMinimized ? 'bg-zinc-800/50 text-zinc-400 border-zinc-700/80 hover:text-white' : 'bg-zinc-700 text-white border-zinc-600'}`}
-       title="Toggle Inspector Sidebar"
-      >
-       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="15" y1="3" x2="15" y2="21"/></svg> Sidebar
       </button>
 
       <div className="h-4 w-px bg-zinc-800 mx-1" />
