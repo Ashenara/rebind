@@ -1,5 +1,5 @@
-import React, { useRef, useEffect } from 'react';
-import { X, Settings, Bold, Italic, Underline, WrapText, Download, Upload, ChevronUp, ChevronDown } from 'lucide-react';
+import React, { useRef, useEffect, useState } from 'react';
+import { X, Settings, Bold, Italic, Underline, WrapText, Download, Upload, GripHorizontal } from 'lucide-react';
 import type { ReconstructionSettings } from '../../types';
 
 interface ReconstructionSettingsModalProps {
@@ -14,6 +14,8 @@ export const ReconstructionSettingsModal: React.FC<ReconstructionSettingsModalPr
   onClose
 }) => {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const [draggingIdx, setDraggingIdx] = useState<number | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
 
   useEffect(() => {
     // Open natively when mounted
@@ -64,39 +66,45 @@ export const ReconstructionSettingsModal: React.FC<ReconstructionSettingsModalPr
             <span className="block text-[0.75rem] font-bold text-zinc-400 uppercase tracking-widest mb-1">
               Layout Order (Left to Right)
             </span>
-            <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2 overflow-x-auto pb-2">
               {currentOrder.map((panel, idx) => (
-                <div key={panel} className="flex items-center justify-between p-2 rounded-lg bg-zinc-800/30 border border-zinc-700/50">
-                  <span className="text-xs font-medium text-zinc-300 capitalize">{panel === 'inspector' ? 'Metadata' : panel} Pane</span>
-                  <div className="flex items-center gap-1">
-                    <button
-                      disabled={idx === 0}
-                      onClick={() => {
-                        const newOrder = [...currentOrder];
-                        [newOrder[idx], newOrder[idx - 1]] = [newOrder[idx - 1], newOrder[idx]];
-                        onSave({ ...settings, layoutOrder: newOrder });
-                      }}
-                      className="p-1 text-zinc-400 hover:text-white disabled:opacity-30 cursor-pointer transition-colors"
-                    >
-                      <ChevronUp size={14} />
-                    </button>
-                    <button
-                      disabled={idx === currentOrder.length - 1}
-                      onClick={() => {
-                        const newOrder = [...currentOrder];
-                        [newOrder[idx], newOrder[idx + 1]] = [newOrder[idx + 1], newOrder[idx]];
-                        onSave({ ...settings, layoutOrder: newOrder });
-                      }}
-                      className="p-1 text-zinc-400 hover:text-white disabled:opacity-30 cursor-pointer transition-colors"
-                    >
-                      <ChevronDown size={14} />
-                    </button>
-                  </div>
+                <div
+                  key={panel}
+                  draggable
+                  onDragStart={(e) => {
+                    setDraggingIdx(idx);
+                    // Required for Firefox
+                    e.dataTransfer.effectAllowed = 'move';
+                    e.dataTransfer.setData('text/plain', idx.toString());
+                  }}
+                  onDragEnter={() => setDragOverIdx(idx)}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDragEnd={() => {
+                    if (draggingIdx !== null && dragOverIdx !== null && draggingIdx !== dragOverIdx) {
+                      const newOrder = [...currentOrder];
+                      const draggedItem = newOrder[draggingIdx];
+                      newOrder.splice(draggingIdx, 1);
+                      newOrder.splice(dragOverIdx, 0, draggedItem);
+                      onSave({ ...settings, layoutOrder: newOrder });
+                    }
+                    setDraggingIdx(null);
+                    setDragOverIdx(null);
+                  }}
+                  className={`
+                    flex-1 flex flex-col items-center justify-center p-3 rounded-lg border transition-all cursor-grab active:cursor-grabbing
+                    ${draggingIdx === idx ? 'opacity-50 border-violet-500/50 bg-violet-500/10' : 'bg-zinc-800/30 border-zinc-700/50 hover:bg-zinc-800/60'}
+                    ${dragOverIdx === idx && draggingIdx !== idx ? 'border-violet-500 border-dashed bg-violet-500/20' : ''}
+                  `}
+                >
+                  <GripHorizontal size={16} className="text-zinc-500 mb-2" />
+                  <span className="text-xs font-medium text-zinc-300 capitalize text-center">
+                    {panel === 'inspector' || panel === 'metadata' ? 'Metadata' : panel}
+                  </span>
                 </div>
               ))}
             </div>
             <span className="text-[10px] text-zinc-500 mb-2">
-              Change the visual order of the Spine, Editor, and Inspector panes on desktop.
+              Drag and drop to reorder the Spine, Editor, and Metadata panes.
             </span>
           </div>
           
