@@ -154,7 +154,7 @@ export default function App() {
         : [...hidden, panelId];
       return { ...prev, hiddenPanels: newHidden };
     });
-  }, []);
+  }, [setSettings]);
 
   // Google Drive Login handler
   const handleDriveLogin = useGoogleLogin({
@@ -477,7 +477,9 @@ export default function App() {
         if (newTitle !== ch.title) {
           return { ...ch, title: newTitle };
         }
-      } catch (e) {}
+      } catch {
+        // ignore errors
+      }
       return ch;
     }));
   };

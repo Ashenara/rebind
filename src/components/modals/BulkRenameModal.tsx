@@ -39,8 +39,8 @@ export const BulkRenameModal: React.FC<BulkRenameModalProps> = ({
       }).filter(Boolean) as { id: string, oldTitle: string, newTitle: string }[];
       
       return { matches: matched, error: null };
-    } catch (e: any) {
-      return { matches: [], error: e.message };
+    } catch (e) {
+      return { matches: [], error: (e as Error).message };
     }
   }, [pattern, replacement, chapters]);
 

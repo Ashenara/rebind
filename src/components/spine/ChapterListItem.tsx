@@ -74,7 +74,7 @@ export const ChapterListItem: React.FC<ChapterListItemProps> = ({
     badgeClasses = 'text-amber-400 border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 hover:border-amber-500/50';
   }
 
-  let titleClasses = chapter.exclude ? 'text-zinc-500 line-through' : 'text-white';
+  const titleClasses = chapter.exclude ? 'text-zinc-500 line-through' : 'text-white';
 
   return (
   <div
