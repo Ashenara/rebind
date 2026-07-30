@@ -136,8 +136,8 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
       </button>
 
       <button
-       onClick={() => onTogglePanel('inspector')}
-       className={`p-1.5 rounded-md hover:bg-zinc-800 border transition-colors flex items-center gap-1.5 text-xs ${!settings.hiddenPanels?.includes('inspector') ? 'bg-zinc-800/50 text-zinc-400 border-zinc-700/80 hover:text-white' : 'bg-zinc-700 text-white border-zinc-600'}`}
+       onClick={() => onTogglePanel('metadata')}
+       className={`p-1.5 rounded-md hover:bg-zinc-800 border transition-colors flex items-center gap-1.5 text-xs ${!settings.hiddenPanels?.includes('metadata') ? 'bg-zinc-800/50 text-zinc-400 border-zinc-700/80 hover:text-white' : 'bg-zinc-700 text-white border-zinc-600'}`}
        title="Toggle Metadata Sidebar"
       >
        <PanelRightClose size={14} /> Metadata

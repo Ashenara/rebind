@@ -37,7 +37,6 @@ export interface ReconstructionSettings {
   keepBrTags: boolean;     // keep <br/> tags
   regexRules: RegexRule[];
   geminiApiKey?: string;   // Optional API key for Gemini AI
-  layoutOrder: string[];   // e.g. ['spine', 'editor', 'inspector']
-  hiddenPanels: string[];  // e.g. ['inspector']
+  layoutOrder: string[];   // e.g. ['spine', 'editor', 'metadata']
+  hiddenPanels: string[];  // e.g. ['metadata']
 }
-

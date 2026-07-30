@@ -42,7 +42,7 @@ export default function App() {
 
   // Resizable columns & collapsible panels states
   // App layout states
-  const [mobileTab, setMobileTab] = useState<'spine' | 'editor' | 'inspector'>('editor');
+  const [mobileTab, setMobileTab] = useState<'spine' | 'editor' | 'metadata'>('editor');
   const [spineWidth, setSpineWidth] = useState(() => typeof window !== 'undefined' ? Math.min(450, Math.max(280, window.innerWidth * 0.28)) : 340);
   const [sidebarWidth, setSidebarWidth] = useState(320);
   const [isLogsMinimized, setIsLogsMinimized] = useState(false);
@@ -84,7 +84,7 @@ export default function App() {
   const startX = e.clientX;
   const startWidth = sidebarWidth;
   let rafId: number | null = null;
-  const isLeftOfEditor = settings.layoutOrder.indexOf('inspector') < settings.layoutOrder.indexOf('editor');
+  const isLeftOfEditor = (settings.layoutOrder?.indexOf('metadata') ?? 2) < (settings.layoutOrder?.indexOf('editor') ?? 1);
 
   const handleMouseMove = (moveEvent: MouseEvent) => {
   if (rafId) cancelAnimationFrame(rafId);
@@ -705,20 +705,20 @@ export default function App() {
           </div>
         )}
 
-        {/* RIGHT SIDEBAR (Inspector) */}
-        {!settings.hiddenPanels?.includes('inspector') && (
+        {/* RIGHT SIDEBAR (Metadata) */}
+        {!settings.hiddenPanels?.includes('metadata') && (
           <div 
             className={`
-              ${mobileTab === 'inspector' ? 'flex' : 'hidden'} md:flex 
+              ${mobileTab === 'metadata' ? 'flex' : 'hidden'} md:flex 
               w-full md:w-[var(--sidebar-width)] 
               relative h-full shrink-0 group
-              ${(settings.layoutOrder?.indexOf('inspector') ?? 2) > (settings.layoutOrder?.indexOf('editor') ?? 1) ? 'md:border-l' : 'md:border-r'} border-zinc-800
+              ${(settings.layoutOrder?.indexOf('metadata') ?? 2) > (settings.layoutOrder?.indexOf('editor') ?? 1) ? 'md:border-l' : 'md:border-r'} border-zinc-800
             `}
-            style={{ order: settings.layoutOrder?.indexOf('inspector') ?? 2 }}
+            style={{ order: settings.layoutOrder?.indexOf('metadata') ?? 2 }}
           >
             {/* Drag Handle */}
             <div
-              className={`hidden md:block absolute ${(settings.layoutOrder?.indexOf('inspector') ?? 2) > (settings.layoutOrder?.indexOf('editor') ?? 1) ? 'left-0 -ml-1' : 'right-0'} top-0 bottom-0 w-2 cursor-col-resize hover:bg-zinc-700 active:bg-zinc-500 z-10 transition-colors`}
+              className={`hidden md:block absolute ${(settings.layoutOrder?.indexOf('metadata') ?? 2) > (settings.layoutOrder?.indexOf('editor') ?? 1) ? 'left-0 -ml-1' : 'right-0'} top-0 bottom-0 w-2 cursor-col-resize hover:bg-zinc-700 active:bg-zinc-500 z-10 transition-colors`}
               onMouseDown={handleSidebarResizeStart}
             />
             <AppSidebar
@@ -755,8 +755,8 @@ export default function App() {
           <span className="text-[10px] font-medium">Editor</span>
         </button>
         <button
-          onClick={() => setMobileTab('inspector')}
-          className={`flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${mobileTab === 'inspector' ? 'text-violet-400' : 'text-zinc-500 hover:text-zinc-300'}`}
+          onClick={() => setMobileTab('metadata')}
+          className={`flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${mobileTab === 'metadata' ? 'text-violet-400' : 'text-zinc-500 hover:text-zinc-300'}`}
         >
           <Settings size={20} />
           <span className="text-[10px] font-medium">Metadata</span>
