@@ -240,7 +240,9 @@ export const ReconstructionSettingsModal: React.FC<ReconstructionSettingsModalPr
         <div className="flex gap-2 p-4 border-t border-zinc-700/80 bg-zinc-950/40">
           <button
             onClick={() => {
-              const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(settings, null, 2));
+              const exportSettings = { ...settings };
+              delete exportSettings.geminiApiKey; // Prevent exporting API keys in plaintext backups
+              const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportSettings, null, 2));
               const downloadAnchorNode = document.createElement('a');
               downloadAnchorNode.setAttribute("href", dataStr);
               downloadAnchorNode.setAttribute("download", "rebind_settings.json");
